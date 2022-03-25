@@ -10,7 +10,7 @@ pio.templates.default = "simple_white"
 def test_univariate_gaussian():
     # Question 1 - Draw samples and print fitted model
     uni_gaussian = UnivariateGaussian()
-    mu, sigma, sep_num = 10, 1 , 1000
+    mu, sigma, sep_num = 10, 1, 1000
     sample = np.random.normal(mu, sigma, sep_num)
     uni_gaussian.fit(sample)
     print(uni_gaussian.mu_, uni_gaussian.var_)
