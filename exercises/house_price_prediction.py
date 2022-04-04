@@ -37,15 +37,14 @@ def load_data(filename: str):
     df = df[df["condition"].isin(range(1, 6))]
     df = df[df["grade"].isin(range(1, 15))]
     df = df[df["bedrooms"] < 10]
+
+    df["dec_built"] = (df["yr_built"] / 10).astype(int)
+    df = df.drop("yr_built", 1)
+    df = pd.get_dummies(df, prefix='dec_built_', columns=['dec_built'])
+
     # df["recently_renovated"] = np.where(df["yr_renovated"] >= np.percentile(df.yr_renovated.unique(), 70), 1, 0)
     # df = df.drop("yr_renovated", 1)
-    #
-    # df["decade_built"] = (df["yr_built"] / 10).astype(int)
-    # df = df.drop("yr_built", 1)
-    #
     # df = pd.get_dummies(df, prefix='zipcode_', columns=['zipcode'])
-    # df = pd.get_dummies(df, prefix='decade_built_', columns=['decade_built'])
-
     return df
 
 
