@@ -1,10 +1,11 @@
 from __future__ import annotations
 from typing import NoReturn
 
-import IMLearn.metrics
+import IMLearn.metrics.loss_functions as lf
 from ...base import BaseEstimator
 import numpy as np
 from numpy.linalg import pinv
+
 
 
 class LinearRegression(BaseEstimator):
@@ -52,7 +53,7 @@ class LinearRegression(BaseEstimator):
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
         if self.include_intercept_:
-            X = np.hstack(np.ones(X.shape[0],1))
+            X = np.c_[np.ones(X.shape[0]), X]
         self.coefs_ = pinv(X) @ y
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
@@ -70,7 +71,7 @@ class LinearRegression(BaseEstimator):
             Predicted responses of given samples
         """
         if self.include_intercept_:
-            X = np.hstack(np.ones(len(X),1))
+            X = np.c_[np.ones(X.shape[0]), X]
         return X @ self.coefs_
 
 
@@ -91,4 +92,4 @@ class LinearRegression(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
-        IMLearn.metrics.mean_square_error(self.predict(X), y)
+        return lf.mean_square_error(self.predict(X), y)
