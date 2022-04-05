@@ -45,41 +45,42 @@ if __name__ == '__main__':
     # Question 1 - Load and preprocessing of city temperature dataset
     data = load_data('/Users/ronkatz/Desktop/IML.HUJI/datasets/City_Temperature.csv')
     # Question 2 - Exploring data for specific country
-    # israel = data[data["Country"] == "Israel"]
-    # fig = px.scatter(israel, x="DayOfYear", y="Temp", color=israel['Year'].astype(str),
-    #                  title="Temperature in relation with day of year")
-    # fig.show()
-    #
-    # monthly_std = israel.groupby('Month')['Temp'].std().rename('SD')
-    # fig = px.bar(monthly_std, title="SD of each month")
-    # fig.update_traces(marker_color='salmon')
-    # fig.show()
+    israel = data[data["Country"] == "Israel"]
+    fig = px.scatter(israel, x="DayOfYear", y="Temp", color=israel['Year'].astype(str),
+                     title="Temperature in relation with day of year")
+    fig.show()
+
+    monthly_std = israel.groupby('Month')['Temp'].std().rename('SD')
+    fig = px.bar(monthly_std, title="SD of each month")
+    fig.update_traces(marker_color='salmon')
+    fig.show()
 
     # Question 3 - Exploring differences between countries
-    # month = data.groupby(['Country', 'Month']).agg({'Temp': ['mean', 'std']}).reset_index()
-    # month.columns = ['Country', 'Month', 'T_mean', 'T_std']
-    # fig = px.line(month, x='Month', y='T_mean', color=month['Country'].astype(str), title='Average temp for month per'
-    #                                                                              ' country with SD', error_y='T_std')
-    # fig.show()
+    month = data.groupby(['Country', 'Month']).agg({'Temp': ['mean', 'std']}).reset_index()
+    month.columns = ['Country', 'Month', 'T_mean', 'T_std']
+    fig = px.line(month, x='Month', y='T_mean', color=month['Country'].astype(str), title='Average temp for month per'
+                                                                                          ' country with SD',
+                  error_y='T_std')
+    fig.show()
 
     # Question 4 - Fitting model for different values of `k`
     israel = data[data["Country"] == "Israel"]
     israel_t = israel.Temp
     israel_d = israel.DayOfYear
-    # train_x, train_y, test_x, test_y = split_train_test(israel_d, israel_t)
-    # loss = []
-    # for k in range(1,11):
-    #     estimator = PolynomialFitting(k)
-    #     estimator.fit(train_x.to_numpy().flatten(), train_y.to_numpy().flatten())
-    #     loss.append(round(estimator.loss(train_x.to_numpy().flatten(), train_y.to_numpy().flatten()), 2))
-    #
-    # for ind, val in enumerate(loss):
-    #     print("test error recorded for k=" + str(ind) + " is " + str(val))
-    #
-    # fig = px.bar(x = range(1,11), y = loss, title="Loss for k in range 10",
-    #              labels={"x" : "dgree", "y" : "MSE"})
-    # fig.update_traces(marker_color='purple')
-    # fig.show()
+    train_x, train_y, test_x, test_y = split_train_test(israel_d, israel_t)
+    loss = []
+    for k in range(1, 11):
+        estimator = PolynomialFitting(k)
+        estimator.fit(train_x.to_numpy().flatten(), train_y.to_numpy().flatten())
+        loss.append(round(estimator.loss(train_x.to_numpy().flatten(), train_y.to_numpy().flatten()), 2))
+
+    for ind, val in enumerate(loss):
+        print("test error recorded for k=" + str(ind + 1) + " is " + str(val))
+
+    fig = px.bar(x=range(1, 11), y=loss, title="Loss for k in range 10",
+                 labels={"x": "dgree", "y": "MSE"})
+    fig.update_traces(marker_color='purple')
+    fig.show()
 
     # Question 5 - Evaluating fitted model on different countries
     p_loss = []
@@ -99,6 +100,6 @@ if __name__ == '__main__':
     p_loss.append(loss)
 
     fig = px.bar(x=['Jordan', 'The Netherlands', 'South Africa'], y=p_loss, title="Israel error over else countries",
-                 labels={"x" : "country", "y" : "MSE val of israel"})
+                 labels={"x": "country", "y": "MSE val of israel"})
     fig.update_traces(marker_color='green')
     fig.show()

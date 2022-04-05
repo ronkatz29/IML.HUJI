@@ -25,26 +25,27 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
-    df = pd.read_csv(filename, header=0, usecols=[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+    # choose col for model and drop some cols
+    df = pd.read_csv(filename, header=0, usecols=[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
                                                   ]).dropna()
+
+    # remove not logical data
+    df = df.drop_duplicates()
     for feature in ["price", "sqft_living", "sqft_lot", "sqft_above", "yr_built"]:
         df = df[df[feature] > 0]
     for feature in ["bathrooms", "floors", "sqft_basement", "yr_renovated"]:
         df = df[df[feature] >= 0]
 
+    # check data in right range
     df = df[df["waterfront"].isin([0, 1])]
     df = df[df["view"].isin(range(5))]
     df = df[df["condition"].isin(range(1, 6))]
     df = df[df["grade"].isin(range(1, 15))]
     df = df[df["bedrooms"] < 10]
 
-    df["dec_built"] = (df["yr_built"] / 10).astype(int)
-    df = df.drop("yr_built", 1)
-    df = pd.get_dummies(df, prefix='dec_built_', columns=['dec_built'])
+    # get dummy values for zipcode
+    df = pd.get_dummies(df, prefix='zipcode_', columns=['zipcode'])
 
-    # df["recently_renovated"] = np.where(df["yr_renovated"] >= np.percentile(df.yr_renovated.unique(), 70), 1, 0)
-    # df = df.drop("yr_renovated", 1)
-    # df = pd.get_dummies(df, prefix='zipcode_', columns=['zipcode'])
     return df
 
 
@@ -76,8 +77,8 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series,
     for feature in X:
         corr = pearson_corr(X[feature], y)
         plot = px.scatter(pd.DataFrame({'x': X[feature], 'y': y}), x="x", y="y",
-                          title=f"Correlation Between {feature} val and Response <br> Corr {corr}",
-                          labels={"x": f"{feature} Values", "y": "Response Values"})
+                          title="Correlation Between " + feature + " val and Response Corr : " + corr,
+                          labels={"x": feature, "y": "Response Val"})
         pio.write_image(plot, output_path + "pearson.correlation.%s.png" % feature)
 
 
@@ -87,7 +88,7 @@ if __name__ == '__main__':
     df = load_data("/Users/ronkatz/Desktop/IML.HUJI/datasets/house_prices.csv")
 
     # Question 2 - Feature evaluation with respect to response
-    feature_evaluation(df.drop('price', 1), df.price, "")
+    # feature_evaluation(df.drop('price', 1), df.price, "")
 
     # Question 3 - Split samples into training- and testing sets.
     train_x, train_y, test_x, test_y = split_train_test(df.drop('price', 1), df.price, 0.75)
@@ -102,9 +103,9 @@ if __name__ == '__main__':
     estimator = LinearRegression()
     average = []
     var = []
-    for p in range(10, 101, 1): #percentage p in 10%, 11%, ..., 100%,
+    for p in range(10, 101, 1):  # percentage p in 10%, 11%, ..., 100%,
         p_loss = []
-        for nana in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]: #repeat the following 10 times
+        for nana in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:  # repeat the following 10 times
             p_train_x = train_x.sample(frac=p / 100)
             p_train_y = train_y.reindex_like(p_train_x)
             estimator.fit(p_train_x.to_numpy(), p_train_y.to_numpy())
@@ -119,7 +120,7 @@ if __name__ == '__main__':
     for _ in range(10):
         frames.append(go.Frame(data=go.Scatter(x=list(x_axis), y=average, mode="markers+lines",
                                                name="Means",
-                            marker=dict(color="fuchsia", opacity=.7))))
+                                               marker=dict(color="fuchsia", opacity=.7))))
 
     for i in range(len(frames)):
         frames[i]["data"] = (go.Scatter(x=list(x_axis), y=average - 2 * var, fill=None, mode="lines",
