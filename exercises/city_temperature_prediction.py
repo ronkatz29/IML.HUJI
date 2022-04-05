@@ -25,7 +25,10 @@ def load_data(filename: str) -> pd.DataFrame:
     -------
     Design matrix and response vector (Temp)
     """
+    #read the data
     X = pd.read_csv(filename, header=0, parse_dates=True).dropna().drop_duplicates()
+
+    #remove invalid data
     X = X[X["Temp"] > -70]
     X = X[X["Day"] > 0]
     X = X[X["Month"] > 0]
@@ -33,10 +36,14 @@ def load_data(filename: str) -> pd.DataFrame:
     X = X[X["Day"] < 32]
     X = X[X["Month"] < 13]
     X = X[X["Year"] < 2023]
+    #check date fit the day month year
     X = X[X["Day"] == pd.DatetimeIndex(X['Date']).day]
     X = X[X["Month"] == pd.DatetimeIndex(X['Date']).month]
     X = X[X["Year"] == pd.DatetimeIndex(X['Date']).year]
+
+    #add col day of year and culc the day
     X['DayOfYear'] = X.apply(lambda row: row.Day + sum(m_days[:row.Month]), axis=1)
+
     return X
 
 

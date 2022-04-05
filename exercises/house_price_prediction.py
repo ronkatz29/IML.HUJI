@@ -74,10 +74,11 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series,
         var_x, var_y = np.std(x), np.std(y)
         return cov / (var_x * var_y)
 
+    #generate all the scatter for each feacher and culc each PC
     for feature in X:
         corr = pearson_corr(X[feature], y)
         plot = px.scatter(pd.DataFrame({'x': X[feature], 'y': y}), x="x", y="y",
-                          title="Correlation Between " + feature + " val and Response Corr : " + corr,
+                          title="Correlation Between " + str(feature) + " val and Response Corr : " + str(corr),
                           labels={"x": feature, "y": "Response Val"})
         pio.write_image(plot, output_path + "pearson.correlation.%s.png" % feature)
 
@@ -88,7 +89,7 @@ if __name__ == '__main__':
     df = load_data("/Users/ronkatz/Desktop/IML.HUJI/datasets/house_prices.csv")
 
     # Question 2 - Feature evaluation with respect to response
-    # feature_evaluation(df.drop('price', 1), df.price, "")
+    feature_evaluation(df.drop('price', 1), df.price, "")
 
     # Question 3 - Split samples into training- and testing sets.
     train_x, train_y, test_x, test_y = split_train_test(df.drop('price', 1), df.price, 0.75)
