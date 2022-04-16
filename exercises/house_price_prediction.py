@@ -31,9 +31,9 @@ def load_data(filename: str):
 
     # remove not logical data
     df = df.drop_duplicates()
-    for feature in ["price", "sqft_living", "sqft_lot", "sqft_above", "yr_built"]:
+    for feature in ["price", "sqft_living", "sqft_lot", "sqft_above", "yr_built", "bathrooms"]:
         df = df[df[feature] > 0]
-    for feature in ["bathrooms", "floors", "sqft_basement", "yr_renovated"]:
+    for feature in ["floors", "sqft_basement", "yr_renovated"]:
         df = df[df[feature] >= 0]
 
     # check data in right range
@@ -68,13 +68,16 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series,
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
+    for x in X:
+        if "zipcode" in x:
+            X = X.drop(columns=str(x))
 
     def pearson_corr(x, y):
         cov = np.cov(x, y)[0, 1]
         var_x, var_y = np.std(x), np.std(y)
         return cov / (var_x * var_y)
 
-    #generate all the scatter for each feacher and culc each PC
+    # generate all the scatter for each feacher and culc each PC
     for feature in X:
         corr = pearson_corr(X[feature], y)
         plot = px.scatter(pd.DataFrame({'x': X[feature], 'y': y}), x="x", y="y",
