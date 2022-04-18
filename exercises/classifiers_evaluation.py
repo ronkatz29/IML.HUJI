@@ -38,11 +38,13 @@ def run_perceptron():
     """
     for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
         # Load dataset
-        raise NotImplementedError()
+        X, y = load_dataset(f)
 
         # Fit Perceptron and record loss in each fit iteration
+        perceptron = Perceptron()
+        perceptron.fit(X, y)
         losses = []
-        raise NotImplementedError()
+
 
         # Plot figure of loss as function of fitting iteration
         raise NotImplementedError()
@@ -79,10 +81,13 @@ def compare_gaussian_classifiers():
     """
     for f in ["gaussian1.npy", "gaussian2.npy"]:
         # Load dataset
-        raise NotImplementedError()
+        X,y = load_dataset(f)
 
         # Fit models and predict over training set
-        raise NotImplementedError()
+        lda = LDA()
+        gnb = GaussianNaiveBayes()
+        lda.fit(X,y)
+        gnb.fit(X,y)
 
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy

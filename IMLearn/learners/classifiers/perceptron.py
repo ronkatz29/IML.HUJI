@@ -31,6 +31,7 @@ class Perceptron(BaseEstimator):
             A callable to be called after each update of the model while fitting to given data
             Callable function should receive as input a Perceptron instance, current sample and current response
     """
+
     def __init__(self,
                  include_intercept: bool = True,
                  max_iter: int = 1000,
@@ -73,7 +74,28 @@ class Perceptron(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.fit_intercept_`
         """
-        raise NotImplementedError()
+        features = X
+        labels = y
+
+        # set weights to zero
+        w = np.zeros(shape=(1, features.shape[1] + 1))
+
+        for _ in range(self.max_iter_):
+            misclassified = 0
+            for x, label in zip(features, labels):
+                x = np.insert(x, 0, 1)  # Insering 1 for bias, X0 = 1.
+                y_ = 1.0 if (np.dot(w, x.transpose()) > 0) else 0.0  # Calculating prediction/hypothesis
+
+                delta = (label.item(0, 0) - y_)
+
+                if delta:  # misclassified
+                    misclassified += 1
+                    w += (delta * x)
+
+            if misclassified == 0:
+                break
+
+        self.coefs_ = w
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -89,7 +111,8 @@ class Perceptron(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        X = np.c_[np.ones(X.shape[0]), X] #todo
+        return np.sign(X @ self.coefs_)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -109,4 +132,4 @@ class Perceptron(BaseEstimator):
             Performance under missclassification loss function
         """
         from ...metrics import misclassification_error
-        raise NotImplementedError()
+        return misclassification_error(X, y)
