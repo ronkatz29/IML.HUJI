@@ -36,18 +36,24 @@ def run_perceptron():
     Create a line plot that shows the perceptron algorithm's training loss values (y-axis)
     as a function of the training iterations (x-axis).
     """
-    for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
+    for n, f in [("Linearly Separable", "/Users/ronkatz/Desktop/IML.HUJI/datasets/linearly_separable.npy"),
+                 ("Linearly Inseparable", "/Users/ronkatz/Desktop/IML.HUJI/datasets/linearly_inseparable.npy")]:
         # Load dataset
         X, y = load_dataset(f)
 
         # Fit Perceptron and record loss in each fit iteration
-        perceptron = Perceptron()
-        perceptron.fit(X, y)
         losses = []
 
+        def callback(perceptron: Perceptron, x: np.ndarray, y_: int):
+            losses.append(perceptron._loss(X, y))
+
+        perceptron = Perceptron(callback=callback)
+        perceptron._fit(X, y)
 
         # Plot figure of loss as function of fitting iteration
-        raise NotImplementedError()
+        fig = px.line(x=range(len(losses)), y=losses, title=n)
+        fig.update_traces(line_color='darksalmon')
+        fig.show()
 
 
 def get_ellipse(mu: np.ndarray, cov: np.ndarray):
@@ -79,33 +85,36 @@ def compare_gaussian_classifiers():
     """
     Fit both Gaussian Naive Bayes and LDA classifiers on both gaussians1 and gaussians2 datasets
     """
-    for f in ["gaussian1.npy", "gaussian2.npy"]:
+    for f in ["/Users/ronkatz/Desktop/IML.HUJI/datasets/gaussian1.npy",
+              "/Users/ronkatz/Desktop/IML.HUJI/datasets/gaussian2.npy"]:
         # Load dataset
         X,y = load_dataset(f)
 
         # Fit models and predict over training set
         lda = LDA()
-        gnb = GaussianNaiveBayes()
-        lda.fit(X,y)
-        gnb.fit(X,y)
+        # gnb = GaussianNaiveBayes()
+        lda.fit(X, y)
+        # gnb.fit(X, y)
+        lda._predict(X)
+
 
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
-        # Create subplots
-        from IMLearn.metrics import accuracy
-        raise NotImplementedError()
-
-        # Add traces for data-points setting symbols and colors
-        raise NotImplementedError()
-
-        # Add `X` dots specifying fitted Gaussians' means
-        raise NotImplementedError()
-
-        # Add ellipses depicting the covariances of the fitted Gaussians
-        raise NotImplementedError()
+        # # Create subplots
+        # from IMLearn.metrics import accuracy
+        # raise NotImplementedError()
+        #
+        # # Add traces for data-points setting symbols and colors
+        # raise NotImplementedError()
+        #
+        # # Add `X` dots specifying fitted Gaussians' means
+        # raise NotImplementedError()
+        #
+        # # Add ellipses depicting the covariances of the fitted Gaussians
+        # raise NotImplementedError()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    run_perceptron()
+    # run_perceptron()
     compare_gaussian_classifiers()

@@ -36,7 +36,9 @@ def misclassification_error(y_true: np.ndarray, y_pred: np.ndarray, normalize: b
     -------
     Misclassification of given predictions
     """
-    #TODO how to handle normalize
+    if normalize:
+        return float(np.sum(y_true != y_pred))/y_true.shape[0]
+
     return float(np.sum(y_true != y_pred))
 
 
@@ -76,6 +78,5 @@ def cross_entropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
     raise NotImplementedError()
 
-if __name__ == '__main__':
-    np.random.seed(0)
-    print(mean_square_error(y_true,y_pred))
+# if __name__ == '__main__':
+#     np.random.seed(0)

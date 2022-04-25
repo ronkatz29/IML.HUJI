@@ -74,28 +74,23 @@ class Perceptron(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.fit_intercept_`
         """
-        features = X
-        labels = y
 
-        # set weights to zero
-        w = np.zeros(shape=(1, features.shape[1] + 1))
+        if self.include_intercept_:  # check intercepts
+            X = np.hstack((np.ones((X.shape[0], 1)), X))
+
+        self.coefs_ = np.zeros(X.shape[1])  # set weights to zero
 
         for _ in range(self.max_iter_):
-            misclassified = 0
-            for x, label in zip(features, labels):
-                x = np.insert(x, 0, 1)  # Insering 1 for bias, X0 = 1.
-                y_ = 1.0 if (np.dot(w, x.transpose()) > 0) else 0.0  # Calculating prediction/hypothesis
+            misclassified = 1
+            for x, label in zip(X, y):
+                if label != np.sign(np.dot(self.coefs_, x.transpose())):
+                    self.coefs_ += label * x.transpose()
+                    self.callback_(self, x, label)
+                    misclassified = 0
+                    break  # if one is miscalassified so we break this loop
 
-                delta = (label.item(0, 0) - y_)
-
-                if delta:  # misclassified
-                    misclassified += 1
-                    w += (delta * x)
-
-            if misclassified == 0:
+            if misclassified == 1:  # if we didnt miscalassified for all we break
                 break
-
-        self.coefs_ = w
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -111,7 +106,8 @@ class Perceptron(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        X = np.c_[np.ones(X.shape[0]), X] #todo
+        if self.include_intercept_:
+            X = np.hstack((np.ones((X.shape[0], 1)), X))
         return np.sign(X @ self.coefs_)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
@@ -132,4 +128,4 @@ class Perceptron(BaseEstimator):
             Performance under missclassification loss function
         """
         from ...metrics import misclassification_error
-        return misclassification_error(X, y)
+        return misclassification_error(y, self._predict(X))

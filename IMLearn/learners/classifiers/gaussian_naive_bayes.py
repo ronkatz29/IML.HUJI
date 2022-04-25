@@ -39,7 +39,16 @@ class GaussianNaiveBayes(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        raise NotImplementedError()
+        self.classes_, counter = np.unique(y, return_counts=True)
+
+        self.pi_ = counter / y.shape[0]
+
+        self.mu_ = np.zeros((counter.shape[0], X.shape[1]))
+        self.vars_ = np.zeros((counter.shape[0], X.shape[1]))
+        for k in self.classes_:
+            this_class = X[y == k]
+            self.mu_[k, :] = np.mean(this_class)
+            self.vars_[k, :] = np.var(this_class)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -55,7 +64,7 @@ class GaussianNaiveBayes(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        return np.argmax(self.likelihood(X), axis=1)
 
     def likelihood(self, X: np.ndarray) -> np.ndarray:
         """
@@ -95,4 +104,4 @@ class GaussianNaiveBayes(BaseEstimator):
             Performance under missclassification loss function
         """
         from ...metrics import misclassification_error
-        raise NotImplementedError()
+        misclassification_error(y, self.predict(X))
