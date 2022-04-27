@@ -1,3 +1,5 @@
+import numpy as np
+
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
 from typing import Tuple
 from utils import *
@@ -51,7 +53,7 @@ def run_perceptron():
         perceptron._fit(X, y)
 
         # Plot figure of loss as function of fitting iteration
-        fig = px.line(x=range(len(losses)), y=losses, title=n)
+        fig = px.line(x=range(len(losses)), y=losses, title=f"Loss when data is {n}")
         fig.update_traces(line_color='darksalmon')
         fig.show()
 
@@ -88,33 +90,40 @@ def compare_gaussian_classifiers():
     for f in ["/Users/ronkatz/Desktop/IML.HUJI/datasets/gaussian1.npy",
               "/Users/ronkatz/Desktop/IML.HUJI/datasets/gaussian2.npy"]:
         # Load dataset
-        X,y = load_dataset(f)
+        X, y = load_dataset(f)
 
         # Fit models and predict over training set
         lda = LDA()
-        # gnb = GaussianNaiveBayes()
         lda.fit(X, y)
-        # gnb.fit(X, y)
-        lda._predict(X)
+        gnb = GaussianNaiveBayes()
+        gnb.fit(X, y)
 
+        symbols = np.array(['x', 'diamond', 'circle'])
 
-        # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
-        # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
-        # # Create subplots
-        # from IMLearn.metrics import accuracy
-        # raise NotImplementedError()
-        #
-        # # Add traces for data-points setting symbols and colors
-        # raise NotImplementedError()
-        #
-        # # Add `X` dots specifying fitted Gaussians' means
-        # raise NotImplementedError()
-        #
-        # # Add ellipses depicting the covariances of the fitted Gaussians
-        # raise NotImplementedError()
-
+        from IMLearn.metrics import accuracy
+        models = ["Gaussian Naive Bayes", "Linear Discriminant Analysis"]
+        limits = np.array([X.min(axis=0), X.max(axis=0)]).T + np.array([-.4, .4])
+        fig = make_subplots(rows=1, cols=2, subplot_titles=[rf"$\textbf{{{m}}}$" for m in models])
+        for i, m in enumerate([gnb, lda]):
+            acc = round(accuracy(y, m._predict(X)), 3)
+            fig.add_traces([decision_surface(m._predict, limits[0], limits[1], showscale=False),
+                            go.Scatter(x=X[:, 0], y=X[:, 1], mode="markers", showlegend=False,
+                                       marker=dict(symbol=symbols[y.astype(int)], color=y,
+                                                   colorscale=[custom[0], custom[-1], custom[2]]),
+                                       text=f"accuracy: {acc}", textposition="middle center"),
+                            go.Scatter(x=m.mu_[:, 0], y=m.mu_[:, 1], mode='markers', marker=dict(color="black",
+                                                                                                 symbol="x"),
+                                       showlegend=False),
+                            get_ellipse(m.mu_[0], m.cov_ if i == 1 else np.diag(m.vars_[0])),
+                            get_ellipse(m.mu_[1], m.cov_ if i == 1 else np.diag(m.vars_[1])),  # add ellipses
+                            get_ellipse(m.mu_[2], m.cov_ if i == 1 else np.diag(m.vars_[2]))],
+                           rows=1, cols=i + 1)
+            fig.layout.annotations[i].update(text=f"{models[i]} accuracy: {acc}")
+        fig.update_layout(title=rf"$\textbf{{LDA and GNB estimators with gaussian dataset}}$",
+                          margin=dict(t=100))
+        fig.show()
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # run_perceptron()
+    run_perceptron()
     compare_gaussian_classifiers()

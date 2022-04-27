@@ -55,9 +55,9 @@ class LDA(BaseEstimator):
         self.cov_ = np.zeros((X.shape[1], X.shape[1]))
         for k in self.classes_:
             this_class = X[y == k]
-            self.mu_[k, :] = np.mean(this_class)
+            self.mu_[k, :] = np.mean(this_class, axis=0)
             self.cov_ += (this_class - self.mu_[k]).T @ (this_class - self.mu_[k])
-        self.cov_ /= y.shape[0]
+        self.cov_ /= y.shape[0] - counter.shape[0]
 
         self._cov_inv = np.linalg.inv(self.cov_)
 
@@ -96,16 +96,11 @@ class LDA(BaseEstimator):
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `likelihood` function")
 
-        likelihood_array = np.ndarray((X.shape[0], self.classes_.shape[0]))
+        a = self.mu_ @ self._cov_inv
+        b = np.log(self.pi_) - 0.5 * np.diag(self.mu_ @ self._cov_inv @ self.mu_.T)
+        x = (a @ X.T).T + b
 
-        for k in self.classes_:
-            a_k = self._cov_inv @ self.mu_[k]
-            likelihood_array[:, k] = X @ a_k + np.log(self.pi_[k]) - (1 / 2) * (self.mu_[k] @ a_k)
-        return likelihood_array
-
-        # a = self.mu_ @ self._cov_inv #TODO
-        # b = np.log(self.pi_) - 0.5 * np.diag(self.mu_ @ self._cov_inv @ self.mu_.T)
-        # return (a @ X.T).T + b
+        return x
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -125,4 +120,4 @@ class LDA(BaseEstimator):
             Performance under missclassification loss function
         """
         from ...metrics import misclassification_error
-        misclassification_error(y, self.predict(X))
+        return misclassification_error(y, self.predict(X))
