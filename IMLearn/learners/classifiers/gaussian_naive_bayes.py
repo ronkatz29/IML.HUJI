@@ -99,8 +99,8 @@ class GaussianNaiveBayes(BaseEstimator):
             raise ValueError("Estimator must first be fitted before calling `likelihood` function")
 
         def normal(mean, var, pi):
-            a = np.sqrt(2 * np.pi * var)
-            b = np.exp(-(X - mean) ** 2 / 2 * var)
+            a = np.exp(-(X - mean) ** 2 / 2 * var)
+            b = np.sqrt(2 * np.pi * var)
             return pi * np.product(a / b)
 
         likelihood = np.zeros((self.classes_.shape[0], X.shape[0]))

@@ -27,13 +27,21 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
     """
     # Question 1 - Generate dataset for model f(x)=(x+3)(x+2)(x+1)(x-1)(x-2) + eps for eps Gaussian noise
     # and split into training- and testing portions
-    raise NotImplementedError()
+    epsilon = np.random.normal(0, noise, n_samples)
+    x = np.linspace(-1.2, 2, n_samples)
+    polinom = (x + 3) * (x + 2) * (x + 1) * (x - 1) * (x - 2)
+    poli_noise = polinom + np.random.normal(0, noise, n_samples)
+    x_train, y_train, x_test, y_test = split_train_test(pd.DataFrame(x), pd.Series(poli_noise), 2 / 3)
+
+    go.Figure([go.Scatter(y=polinom, x=x, mode='markers + lines', name="$Train loss$"),
+               go.Scatter(y=poli_noise, x=x, mode='markers + lines', name="$Validation loss$")],
+              layout=go.Layout(title=r"$\text{Train losses}$",
+                               height=650, yaxis_title="Loss on train",
+                               xaxis_title="Polynomial degree")).show()
 
     # Question 2 - Perform CV for polynomial fitting with degrees 0,1,...,10
-    raise NotImplementedError()
 
     # Question 3 - Using best value of k, fit a k-degree polynomial model and report test error
-    raise NotImplementedError()
 
 
 def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 500):
@@ -61,4 +69,4 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 
 if __name__ == '__main__':
     np.random.seed(0)
-    raise NotImplementedError()
+    select_polynomial_degree()
