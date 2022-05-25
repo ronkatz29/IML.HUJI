@@ -37,18 +37,22 @@ def cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
     validation_score: float
         Average validation score over folds
     """
-    #split data
-    sample_split = np.array_split(X, cv)
-    all_errors = np.zeros(cv)
-    val_errors = np.zeros(cv)
+    # split data
+    all_errors, val_errors = 0, 0
+    fold_s = int(y.shape[0]/cv)
 
     for i in range(cv):
-        train_x = np.concatenate(sample_split[:i] + sample_split[i+1:], axis=0)
-        train_v = sample_split[i]
-        all_errors[i] = scoring(estimator.fit(train_x, y[train_x]).predict(train_x), y[train_x])
-        val_errors[i] = scoring(estimator.fit(train_v, y[train_v]).predict(train_v), y[train_v])
+        train_x = np.concatenate((X[:fold_s*i], X[fold_s*(i+1):]), axis=0)
+        train_y = np.concatenate((y[:fold_s*i], y[fold_s*(i+1):]), axis=0)
+        train_v = X[fold_s*i:fold_s*(i+1)]
+        train_v_y = y[fold_s*i:fold_s*(i+1)]
+        estimator.fit(train_x, train_y)
+        # fited_v = estimator.fit(train_v, train_v_y)
+        all_errors += scoring(estimator.predict(train_x), train_y)
+        val_errors += scoring(estimator.predict(train_v), train_v_y)
 
-    return all_errors.mean(), val_errors.mean()
+    return all_errors/cv, val_errors/cv
+
 
 
 
