@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Callable, NoReturn
 import numpy as np
-
+from numpy import linalg
 from IMLearn.base import BaseModule, BaseLR
 from .learning_rate import FixedLR
 
@@ -39,6 +39,7 @@ class GradientDescent:
         Callable function receives as input any argument relevant for the current GD iteration. Arguments
         are specified in the `GradientDescent.fit` function
     """
+
     def __init__(self,
                  learning_rate: BaseLR = FixedLR(1e-3),
                  tol: float = 1e-5,
@@ -119,4 +120,40 @@ class GradientDescent:
                 Euclidean norm of w^(t)-w^(t-1)
 
         """
-        raise NotImplementedError()
+        sol = f.weights_
+        cur_iteration = 0
+        best_val = f.compute_output(X=X, y=y)
+        best_sol = sol
+        average_sum = 0
+
+        for t in range(self.max_iter_):
+            etha = self.learning_rate_.lr_step(t=t)
+            cur_grad = f.compute_jacobian(X=X, y=y)  # cur val of gradient
+            new_sol = sol - etha * cur_grad  # cluc t+1
+            delta = linalg.norm(sol - new_sol)
+
+            sol = new_sol  #param next
+            f.weights = new_sol
+
+            cur_val = f.compute_output(X=X, y=y) #check best loss
+            if cur_val < best_val:
+                best_val = cur_val
+                best_sol = sol
+
+            average_sum += sol
+            cur_iteration += 1
+            self.callback_(GD=self,
+                           jacobian=f.compute_jacobian(X=X, y=y),
+                           t=t,
+                           eta=etha,
+                           norm=delta,
+                           weights=f.weights,
+                           val=f.compute_output(X=X, y=y))
+            if delta < self.tol_:
+                break
+
+        if self.out_type_ == "last":
+            return sol
+
+        return best_sol if self.out_type_ == "best" else (average_sum / cur_iteration)
+
