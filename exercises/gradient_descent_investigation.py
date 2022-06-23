@@ -236,7 +236,7 @@ def fit_logistic_regression():
                          xaxis=dict(title=r"$\text{False Positive Rate (FPR)}$"),
                          yaxis=dict(title=r"$\text{True Positive Rate (TPR)}$"))).show()
 
-    best_a = round(thresholds[np.argmax(tpr - fpr)],2)
+    best_a = round(thresholds[np.argmax(tpr - fpr)], 2)
     print("best alpha is---->" + str(best_a))
     lg.alpha_ = best_a
     lg_test_error = lg._loss(X_test, y_test)
@@ -244,42 +244,42 @@ def fit_logistic_regression():
 
     # Fitting l1- and l2-regularized logistic regression models, using cross-validation to specify values
     # of regularization parameter
-    lamdas = [0.1, 0.002, 0.05, 0.001, 0.005, 0.01, 0.02]
+    lamdas = [0.1, 0.002, 0.02, 0.001, 0.005, 0.01, 0.05]
     v_error_all_1 = []
+    v_error_all_2 = []
     for lamda in lamdas:
-        print("l1 starting " + str(lamda))
-        estimator = LogisticRegression(include_intercept=True, penalty="l1",
-                                       solver=GradientDescent(learning_rate=FixedLR(1e-4), max_iter=5000), lam=lamda)
-        train_err, v_error = cross_validate(estimator, X_train, y_train, misclassification_error)
-        v_error_all_1.append(v_error)
+        print("starting " + str(lamda))
+        estimator1 = LogisticRegression(include_intercept=True, penalty="l1",
+                                       solver=GradientDescent(learning_rate=FixedLR(1e-4), max_iter=20000), lam=lamda)
+        train_err2, v_error1 = cross_validate(estimator1, X_train, y_train, misclassification_error)
+        v_error_all_1.append(v_error1)
+        estimator2 = LogisticRegression(include_intercept=True, penalty="l2",
+                                        solver=GradientDescent(learning_rate=FixedLR(1e-4), max_iter=20000), lam=lamda)
+        train_err2, v_error2 = cross_validate(estimator2, X_train, y_train, misclassification_error)
+        v_error_all_2.append(v_error2)
+
     best_lam_1 = lamdas[np.argmin(v_error_all_1)]
     lr_l1 = LogisticRegression(include_intercept=True, penalty="l1",
-                               solver=GradientDescent(learning_rate=FixedLR(1e-4), max_iter=5000),
+                               solver=GradientDescent(learning_rate=FixedLR(1e-4), max_iter=20000),
                                lam=best_lam_1)
     print()
     print("best lamda l1 is---->" + str(best_lam_1))
     lr_test_error = lr_l1.fit(X_train, y_train)._loss(X_test, y_test)
     print("l1 model test error--->" + str(lr_test_error))
     print()
-
-    v_error_all_2 = []
-    for lamda in lamdas:
-        print("l2 starting " + str(lamda))
-        estimator = LogisticRegression(include_intercept=True, penalty="l2",
-                                       solver=GradientDescent(learning_rate=FixedLR(1e-4), max_iter=5000), lam=lamda)
-        train_err, v_error = cross_validate(estimator, X_train, y_train, misclassification_error)
-        v_error_all_2.append(v_error)
     best_lam_2 = lamdas[np.argmin(v_error_all_2)]
     lr_l2 = LogisticRegression(include_intercept=True, penalty="l2",
-                               solver=GradientDescent(learning_rate=FixedLR(1e-4), max_iter=5000), lam=best_lam_2)
+                               solver=GradientDescent(learning_rate=FixedLR(1e-4), max_iter=20000), lam=best_lam_2)
+
     print()
     print("best lamda l2 is---->" + str(best_lam_2))
     lr_test_error = lr_l2.fit(X_train, y_train)._loss(X_test, y_test)
     print("l2 model test error--->" + str(lr_test_error))
 
 
+
 if __name__ == '__main__':
     np.random.seed(0)
-    compare_fixed_learning_rates()
-    compare_exponential_decay_rates()
-    # fit_logistic_regression()
+    # compare_fixed_learning_rates()
+    # compare_exponential_decay_rates()
+    fit_logistic_regression()

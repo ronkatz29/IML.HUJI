@@ -206,7 +206,7 @@ class RegularizedModule(BaseModule):
 
         if weights is not None:
             # self.weights(weights)
-            # self.weights = weights
+            self.weights = weights
             self.weights_ = weights
             self.fidelity_module_.weights = weights
             if self.regularization_module_ is not None:
